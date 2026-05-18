@@ -1,3 +1,4 @@
+package,repo
 libclone-perl,https://github.com/garu/Clone
 libdisplay-info,https://gitlab.freedesktop.org/emersion/libdisplay-info
 lua5.4,https://github.com/lua/lua
