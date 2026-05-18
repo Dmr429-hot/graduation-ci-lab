@@ -1,0 +1,46 @@
+﻿package,failed_stage,main_category,sub_category,diagnosis,fix_type,apt_packages,command,confidence,notes
+libdisplay-info,test,测试阶段失败,单元测试或集成测试失败,测试阶段失败，1个测试未通过,skip,,,low,测试失败可能是源码问题，建议查看详细测试日志
+libclone-perl,test,未分类错误,规则未覆盖,缺少B::COW模块,apt_install,libb-cow-perl,sudo apt install -y libb-cow-perl,high,安装Perl模块B::COW即可解决
+libical3,configure,依赖缺失,pkg-config、CMake 或 Meson 依赖未找到,缺少gobject-introspection开发包,apt_install,libgirepository1.0-dev,sudo apt install -y libgirepository1.0-dev,high,也可通过-DLIBICAL_GOBJECT_INTROSPECTION=False禁用
+cryptsetup,configure,构建系统问题,CMake 或 Meson 配置失败,Meson版本过低，需>=0.64,apt_install,meson,sudo apt install -y meson,high,升级meson到0.64或更高版本
+udisks2,prepare,依赖缺失,文档或手册生成工具缺失,缺少gtkdocize工具,apt_install,gtk-doc-tools,sudo apt install -y gtk-doc-tools,high,gtkdocize属于gtk-doc-tools包
+ghostscript,configure,构建系统问题,CMake 或 Meson 配置失败,源码目录缺少CMakeLists.txt,manual_fix,,检查源码目录是否正确，或使用Autotools构建,high,ghostscript使用Autotools，不是CMake
+exiv2,configure,依赖缺失,pkg-config、CMake 或 Meson 依赖未找到,缺少inih库,apt_install,libinih-dev,sudo apt install -y libinih-dev,high,inih是INI文件解析库，安装开发包即可
+modemmanager,configure,依赖缺失,pkg-config、CMake 或 Meson 依赖未找到,缺少gudev-1.0开发包,apt_install,libgudev-1.0-dev,sudo apt install -y libgudev-1.0-dev,high,
+kconfig,configure,构建系统问题,CMake 或 Meson 配置失败,CMake版本过低，需要3.29+,apt_install,cmake,sudo apt install -y cmake,high,Ubuntu 22.04默认cmake 3.22，需从kitware仓库或源码安装新版
+libxfce4util,configure,依赖缺失,pkg-config、CMake 或 Meson 依赖未找到,缺少gobject-introspection开发包,apt_install,libgirepository1.0-dev,sudo apt install -y libgirepository1.0-dev,high,安装后重新配置即可
+libbytesize,configure,未分类错误,规则未覆盖,缺少gettext工具,apt_install,gettext,sudo apt install -y gettext,high,安装gettext后重新configure
+file,build,源码编译错误,源码语法、接口或兼容性错误,源码中sandbox变量未定义,manual_fix,,,high,需要检查源码中sandbox的定义或条件编译宏
+plasma-activities,configure,依赖缺失,pkg-config、CMake 或 Meson 依赖未找到,缺少ECM开发包,apt_install,extra-cmake-modules,sudo apt install -y extra-cmake-modules,high,ECM是Extra CMake Modules的缩写，对应包名为extra-cmake-modules
+libnvme,configure,构建系统问题,CMake 或 Meson 配置失败,Meson版本过低，需>=0.62.0,apt_install,meson,sudo apt install -y meson,high,若系统meson版本仍低，需从pip或源码安装
+qt6-speech,configure,依赖缺失,pkg-config、CMake 或 Meson 依赖未找到,缺少Qt6开发包,apt_install,qt6-base-dev,sudo apt install -y qt6-base-dev,high,安装Qt6基础开发包即可
+gssdp,configure,依赖缺失,pkg-config、CMake 或 Meson 依赖未找到,缺少libsoup-3.0开发包,apt_install,libsoup-3.0-dev,sudo apt install -y libsoup-3.0-dev,high,
+kf6-kbookmarks,configure,构建系统问题,CMake 或 Meson 配置失败,CMake版本过低，需要3.29+,apt_install,cmake,sudo apt install -y cmake,high,Ubuntu 22.04默认cmake 3.22，需从kitware仓库或源码安装新版
+ki18n,configure,构建系统问题,CMake 或 Meson 配置失败,CMake版本过低，需要3.29+,apt_install,cmake,sudo apt install -y cmake,high,Ubuntu 22.04默认cmake 3.22，需从kitware仓库安装新版
+network-manager,configure,依赖缺失,pkg-config、CMake 或 Meson 依赖未找到,缺少libndp开发包,apt_install,libndp-dev,sudo apt install -y libndp-dev,high,
+kf6-syndication,configure,构建系统问题,CMake 或 Meson 配置失败,CMake版本过低，需要3.29+,apt_install,cmake,sudo apt install -y cmake,high,Ubuntu 22.04默认cmake 3.22，需从kitware仓库安装新版
+libxres,configure,构建系统问题,CMake 或 Meson 配置失败,Meson版本过低，不支持license_files参数,manual_fix,,pip3 install --upgrade meson,high,升级Meson到0.63.0以上版本
+kf6-attica,configure,构建系统问题,CMake 或 Meson 配置失败,CMake版本过低，需要3.29+,apt_install,cmake,sudo apt install -y cmake,high,Ubuntu 22.04默认cmake 3.22，需从kitware仓库或源码安装新版
+kf6-knewstuff,configure,构建系统问题,CMake 或 Meson 配置失败,CMake版本过低，需要3.29+,apt_install,cmake,sudo apt install -y cmake,high,Ubuntu 22.04默认cmake 3.22，需从kitware仓库安装新版
+xmlsec1,test,未分类错误,规则未覆盖,测试阶段成功，无构建失败,skip,,,high,日志显示测试全部通过，无需修复
+libmanette,configure,依赖缺失,pkg-config、CMake 或 Meson 依赖未找到,缺少libevdev和gudev开发包,apt_install,libevdev-dev;libgudev-1.0-dev,sudo apt install -y libevdev-dev libgudev-1.0-dev,high,
+gupnp,configure,依赖缺失,pkg-config、CMake 或 Meson 依赖未找到,缺少libsoup-3.0开发包,apt_install,libsoup-3.0-dev,sudo apt install -y libsoup-3.0-dev,high,
+libsdl2,configure,依赖缺失,pkg-config、CMake 或 Meson 依赖未找到,缺少jack和libpipewire开发包,apt_install,libjack-dev;libpipewire-0.3-dev,sudo apt install -y libjack-dev libpipewire-0.3-dev,high,根据pkg-config报错，安装对应-dev包
+gcr,configure,依赖缺失,pkg-config、CMake 或 Meson 依赖未找到,glib-2.0版本过低，需要>=2.74,apt_install,libglib2.0-dev,sudo apt install -y libglib2.0-dev,high,当前版本2.72.4，需升级至2.74以上
+python-charset-normalizer,build,未分类错误,规则未覆盖,缺少Makefile或构建系统配置,manual_fix,,,high,检查源码目录，可能需要运行autoreconf或使用其他构建工具
+xfconf,configure,依赖缺失,pkg-config、CMake 或 Meson 依赖未找到,缺少libxfce4util-1.0开发包,apt_install,libxfce4util-dev,sudo apt install -y libxfce4util-dev,high,
+libbpf,build,未分类错误,规则未覆盖,缺少Makefile，可能未配置或解压错误,manual_fix,,检查源码目录，运行./configure或autoreconf -i生成Makefile,low,建议确认源码完整性并执行配置步骤
+net-snmp,build,环境与网络问题,网络、代理或仓库访问失败,缺少perl库链接,apt_install,libperl-dev,sudo apt install -y libperl-dev,high,安装perl开发库以提供libperl
+libxfce4ui,configure,依赖缺失,pkg-config、CMake 或 Meson 依赖未找到,缺少gtk+-3.0开发包,apt_install,libgtk-3-dev,sudo apt install -y libgtk-3-dev,high,
+lsof,test,测试阶段失败,单元测试或集成测试失败,测试用例case-20-mmap.bash失败,skip,,,low,测试失败可能是环境或源码问题，建议忽略或手动排查
+libgee-0.8,prepare,依赖缺失,文档或手册生成工具缺失,缺少gobject-introspection工具,apt_install,gobject-introspection;libgirepository1.0-dev,sudo apt install -y gobject-introspection libgirepository1.0-dev,high,HAVE_INTROSPECTION未定义，需安装gobject-introspection
+qtsvg-opensource-src,configure,依赖缺失,pkg-config、CMake 或 Meson 依赖未找到,缺少Qt6开发包,apt_install,qt6-base-dev,sudo apt install -y qt6-base-dev,high,安装Qt6基础开发包即可
+accountsservice,configure,构建系统问题,CMake 或 Meson 配置失败,Meson版本过低，需≥0.63.0,apt_install,meson,sudo apt install -y meson,high,升级meson到最新版本即可
+sane-backends,prepare,依赖缺失,pkg-config、CMake 或 Meson 依赖未找到,缺少autoconf-archive宏包,apt_install,autoconf-archive,sudo apt install -y autoconf-archive,high,安装autoconf-archive提供AC_HEADER_STDC等宏
+libcdio,prepare,构建系统问题,Autotools 宏或辅助脚本缺失,缺少libcdio开发库,apt_install,libcdio-dev,sudo apt install -y libcdio-dev,high,安装libcdio开发包即可满足依赖
+bluez,configure,依赖缺失,pkg-config、CMake 或 Meson 依赖未找到,缺少libical和cups开发包,apt_install,libical-dev;libcups2-dev,sudo apt install -y libical-dev libcups2-dev,high,同时安装libical和cups的pkg-config依赖
+evolution-data-server,configure,依赖缺失,pkg-config、CMake 或 Meson 依赖未找到,缺少gettext工具,apt_install,gettext,sudo apt install -y gettext,high,安装gettext提供msgmerge和msgfmt
+libgphoto2,configure,构建系统问题,CMake 或 Meson 配置失败,Meson版本过低，需>=1.4.0,apt_install,meson,sudo apt install -y meson,high,升级meson到最新版即可
+geocode-glib,configure,依赖缺失,pkg-config、CMake 或 Meson 依赖未找到,缺少libsoup-2.4开发包,apt_install,libsoup2.4-dev,sudo apt install -y libsoup2.4-dev,high,
+libgweather4,configure,构建系统问题,CMake 或 Meson 配置失败,Meson版本过低，需>=1.5,apt_install,meson,sudo apt install -y meson,high,升级meson到1.5以上版本
+efivar,build,源码编译错误,源码语法、接口或兼容性错误,asprintf返回值未检查导致编译错误,manual_fix,,sed -i 's/-Werror/-Wno-error=unused-result/g' Makefile && make,high,移除-Werror或将asprintf返回值检查降级为警告

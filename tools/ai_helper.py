@@ -50,9 +50,10 @@ JSON格式（必须严格遵守）：
 }
 
 规则：
-- fix_type=apt_install 时，apt_packages必填，command写完整 sudo apt install -y 命令
+- fix_type=apt_install 时，apt_packages必填（列出包名），command字段写 "apt install -y 包名"（**不带 sudo 前缀**，留给有权限的用户自己加）
 - 缺什么开发包就装对应的 -dev 包（如缺 gtk+-3.0 → libgtk-3-dev，缺 libpng.h → libpng-dev）
 - 如果是源码bug、上游问题、网络问题等 apt 无法解决的，fix_type=manual_fix 或 skip
+- manual_fix 的 command 字段如果涉及执行命令，也不要加 sudo 前缀
 - 不确定时 confidence=low，宁可保守也别给错误的包名
 - 只返回JSON对象，不要加 ```json``` 之类的markdown标记"""
 

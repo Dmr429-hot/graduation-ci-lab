@@ -32,18 +32,18 @@ ERROR_PATTERNS = [
     r"Unable to locate package",
 ]
 
-# === 噪音行：日志中的"装饰性"输出，对诊断无意义 ===
+# === 噪音行 ===
 NOISE_PATTERNS = [
-    re.compile(r"^\s*\[\s*\d+%\]"),                  # 进度行  [ 45%] Building ...
+    re.compile(r"^\s*\[\s*\d+%\]"),
     re.compile(r"^\s*--\s+(Found|Check|Looking|Detecting|Performing|Configuring|Generating|Build files|Switching)"),
     re.compile(r"^\s*checking\b.+\.\.\.\s*(yes|ok|done)\s*$", re.IGNORECASE),
     re.compile(r"^\s*config\.status:", re.IGNORECASE),
     re.compile(r"^\s*libtool:\s*(compile|link):"),
-    re.compile(r"^\s*$"),                            # 空行
-    re.compile(r"^\s*-{2,}\s*$"),                    # 横线分隔
-    re.compile(r"^\s*Building\s+(C|CXX)\s+object\s"),  # cmake/make 编译进度
+    re.compile(r"^\s*$"),
+    re.compile(r"^\s*-{2,}\s*$"),
+    re.compile(r"^\s*Building\s+(C|CXX)\s+object\s"),
     re.compile(r"^\s*Linking\s+(C|CXX)\s+(executable|shared|static)"),
-    re.compile(r"^\s*\[\d+/\d+\]\s+(Building|Generating|Linking|Compiling)"),  # ninja
+    re.compile(r"^\s*\[\d+/\d+\]\s+(Building|Generating|Linking|Compiling)"),
     re.compile(r"^\s*make(\[\d+\])?: \*\*\*"),
     re.compile(r"^\s*gmake(\[\d+\])?: \*\*\*"),
     re.compile(r"^\s*ninja: build stopped"),
@@ -52,26 +52,22 @@ NOISE_PATTERNS = [
     re.compile(r"^\s*(gcc|g\+\+|cc|c\+\+|clang|clang\+\+)\s+.*-[Iilo]\s"),
 ]
 
-# === 行级清洁：超长 gcc/cc 编译命令行截断 ===
 COMPILE_CMD_RE = re.compile(r"^\s*(gcc|g\+\+|cc|c\+\+|clang|clang\+\+|ld|ar)\s+.*-[Iilo]\s*\S")
 
-def is_noise(line: str) -> bool:
+def is_noise(line):
     return any(p.search(line) for p in NOISE_PATTERNS)
 
-def clean_line(line: str, max_len: int = 200) -> str:
-    """单行清洁：长编译命令截断 + 行长度限制"""
+def clean_line(line, max_len=200):
     line = line.rstrip()
     if COMPILE_CMD_RE.match(line) and len(line) > max_len:
-        # 编译命令行：保留前缀 + "..." + 后缀（保留报错相关的最后部分）
         return line[:80] + " ... [命令截断] ... " + line[-80:]
     if len(line) > max_len:
         return line[:max_len] + " ...[截断]"
     return line
 
 
-# === 结构化提取：从日志里抽取关键事实 ===
+# === 结构化字段抽取 ===
 FACT_EXTRACTORS = [
-    # (字段名, 正则)
     ("missing_header",  re.compile(r"fatal error:\s*(\S+\.h(?:pp|xx|\+\+)?)\s*:\s*No such file", re.IGNORECASE)),
     ("missing_header",  re.compile(r"^#include\s+[<\"](\S+\.h(?:pp|xx|\+\+)?)\s*[>\"].*\n.*No such file", re.MULTILINE)),
     ("missing_package", re.compile(r"Could NOT find\s+(\w+)")),
@@ -88,11 +84,10 @@ FACT_EXTRACTORS = [
     ("missing_command", re.compile(r"missing required tool[: ]+(\S+)", re.IGNORECASE)),
 ]
 
-def extract_facts(text: str) -> dict:
-    """从日志全文里抽取结构化关键事实"""
+def extract_facts(text):
     facts = {}
     for field, pat in FACT_EXTRACTORS:
-        if field in facts and facts[field]:  # 已有该字段，跳过
+        if field in facts and facts[field]:
             continue
         m = pat.search(text)
         if m:
@@ -100,8 +95,9 @@ def extract_facts(text: str) -> dict:
     return facts
 
 
-# === 规则表（带优先级 + 处置动作）===
+# === 规则表（22 个子分类）===
 RULES = [
+    # 网络/代理 (priority 5)
     {
         "rule_name": "network_or_proxy_error",
         "priority": 5,
@@ -110,54 +106,135 @@ RULES = [
         "owner_side": "测试环境侧",
         "action": "检查网络、代理、仓库地址和访问权限",
         "patterns": [
-            r"Connection reset", r"Failed to connect", r"Could not resolve host",
-            r"Temporary failure resolving", r"GnuTLS recv error", r"early EOF",
-            r"unexpected disconnect", r"TLS connection", r"Proxy",
+            r"Connection reset by peer",
+            r"Failed to connect to",
+            r"Could not resolve host",
+            r"Temporary failure resolving",
+            r"GnuTLS recv error",
+            r"unexpected disconnect while reading sideband",
+            r"TLS connection was non-properly terminated",
+            r"proxy connect.*failed",
+            r"HTTP proxy error",
+            r"curl: \(\d+\)",
+            r"RPC 失败.*curl",
+            r"early EOF",
+            r"fetch-pack: unexpected disconnect",
         ],
     },
+    # 依赖缺失 - pkg-config (priority 10)
     {
-        "rule_name": "dependency_pkg_config_missing",
+        "rule_name": "dependency_pkgconfig_missing",
         "priority": 10,
         "main_category": "依赖缺失",
-        "sub_category": "pkg-config、CMake 或 Meson 依赖未找到",
+        "sub_category": "pkg-config 包未找到",
         "owner_side": "测试环境侧",
-        "action": "安装缺失的开发包，或关闭对应可选功能",
+        "action": "安装对应的 -dev 开发包",
         "patterns": [
-            r"No package '.*' found", r"Package .* was not found",
-            r"Dependency .* not found",
+            r"No package '.*' found",
+            r"Package .* was not found",
+            r"Package '.*' .* was not found",
+        ],
+    },
+    # 依赖缺失 - CMake (priority 10)
+    {
+        "rule_name": "dependency_cmake_missing",
+        "priority": 10,
+        "main_category": "依赖缺失",
+        "sub_category": "CMake 包未找到",
+        "owner_side": "测试环境侧",
+        "action": "安装对应的 -dev 开发包，或检查 CMAKE_PREFIX_PATH",
+        "patterns": [
+            r"Could NOT find",
+            r"Could not find a package configuration file",
+            r"CMake Error.*Could not find",
+        ],
+    },
+    # 依赖缺失 - Meson (priority 10)
+    {
+        "rule_name": "dependency_meson_missing",
+        "priority": 10,
+        "main_category": "依赖缺失",
+        "sub_category": "Meson 依赖未找到",
+        "owner_side": "测试环境侧",
+        "action": "安装对应的 -dev 开发包，或关闭对应可选功能",
+        "patterns": [
             r"Run-time dependency .* found: NO",
             r"Build-time dependency .* found: NO",
             r"Native dependency .* found: NO",
-            r"Could NOT find", r"required dependency .* not found",
-            r"hwdata.*not found",
+            r"Dependency .* not found",
+            r"required dependency .* not found",
         ],
     },
+    # 依赖缺失 - 头文件 (priority 11)
     {
-        "rule_name": "dependency_header_or_library_missing",
-        "priority": 10,
+        "rule_name": "dependency_header_missing",
+        "priority": 11,
         "main_category": "依赖缺失",
-        "sub_category": "头文件或库文件缺失",
+        "sub_category": "头文件缺失",
         "owner_side": "测试环境侧",
-        "action": "安装对应 libxxx-dev 开发包，或检查库搜索路径",
+        "action": "安装提供该头文件的 -dev 包",
         "patterns": [
-            r"fatal error: .*: No such file or directory",
-            r"cannot find -l", r"ld: cannot find",
-            r"library .* not found", r"header .* not found",
+            r"fatal error: .*\.h(?:pp|xx|\+\+)?: No such file or directory",
+            r"fatal error: .*\.h(?:pp|xx|\+\+)?: 没有那个文件或目录",
+            r"header .* not found",
+            r"cannot open source file .*\.h",
         ],
     },
+    # 依赖缺失 - 链接库 (priority 12)
+    {
+        "rule_name": "dependency_library_missing",
+        "priority": 12,
+        "main_category": "依赖缺失",
+        "sub_category": "链接库缺失",
+        "owner_side": "测试环境侧",
+        "action": "安装对应的运行时库或 -dev 包",
+        "patterns": [
+            r"(?:ld|/usr/bin/ld):\s*cannot find\s+-l",
+            r"library .* not found",
+            r"cannot find library",
+        ],
+    },
+    # 依赖缺失 - 工具 (priority 15)
     {
         "rule_name": "tool_missing",
         "priority": 15,
         "main_category": "依赖缺失",
         "sub_category": "构建工具或命令缺失",
         "owner_side": "测试环境侧",
-        "action": "安装缺失命令对应的软件包",
+        "action": "安装提供该命令的软件包",
         "patterns": [
             r"command not found", r"Program .* not found",
             r"not found in PATH", r"missing required tool",
-            r"No such file or directory: '.*'",
         ],
     },
+    # 依赖缺失 - Python 模块 (priority 16)
+    {
+        "rule_name": "python_module_missing",
+        "priority": 16,
+        "main_category": "依赖缺失",
+        "sub_category": "Python 模块缺失",
+        "owner_side": "测试环境侧",
+        "action": "用 pip 或 apt 安装对应 python 模块",
+        "patterns": [
+            r"ModuleNotFoundError: No module named",
+            r"ImportError: No module named",
+            r"ImportError: cannot import name",
+        ],
+    },
+    # 依赖缺失 - Perl 模块 (priority 17)
+    {
+        "rule_name": "perl_module_missing",
+        "priority": 17,
+        "main_category": "依赖缺失",
+        "sub_category": "Perl 模块缺失",
+        "owner_side": "测试环境侧",
+        "action": "用 cpan 或 apt 安装对应 perl 模块（如 libxxx-perl）",
+        "patterns": [
+            r"Can't locate .* in @INC",
+            r"Can't locate .*\.pm in @INC",
+        ],
+    },
+    # 依赖缺失 - 文档工具 (priority 20)
     {
         "rule_name": "doc_tool_missing",
         "priority": 20,
@@ -170,6 +247,24 @@ RULES = [
             r"sphinx-build", r"xsltproc", r"help2man", r"docbook", r"manpage",
         ],
     },
+    # 工具版本过低 (priority 25)
+    {
+        "rule_name": "tool_version_too_low",
+        "priority": 25,
+        "main_category": "构建系统问题",
+        "sub_category": "构建工具版本过低",
+        "owner_side": "测试环境侧",
+        "action": "升级 CMake / Meson / Python 等工具到要求版本",
+        "patterns": [
+            r"CMake .* or higher is required",
+            r"requires CMake .* or higher",
+            r"Meson version .* required",
+            r"meson .* or newer is required",
+            r"Python .* or newer required",
+            r"requires Python",
+        ],
+    },
+    # Autotools 宏 (priority 30)
     {
         "rule_name": "autotools_macro_error",
         "priority": 30,
@@ -185,33 +280,81 @@ RULES = [
             r"missing auxiliary files",
         ],
     },
+    # 源码 - 未声明 (priority 35)
     {
-        "rule_name": "source_compile_error",
-        "priority": 40,
+        "rule_name": "source_undeclared",
+        "priority": 35,
         "main_category": "源码编译错误",
-        "sub_category": "源码语法、接口或兼容性错误",
+        "sub_category": "未声明的标识符或变量",
         "owner_side": "软件包源码侧",
-        "action": "记录为源码编译问题，通常需要补丁修复",
+        "action": "记录为源码问题，检查是否缺头文件或宏定义",
         "patterns": [
-            r"error: .* undeclared", r"error: .* was not declared",
-            r"error: no member named", r"error: invalid conversion",
-            r"error: incompatible types", r"error: expected .* before",
-            r"error: expected .* at end of input",
-            r"error: redefinition of", r"error: conflicting types for",
-            r"error: implicit declaration",
-            r"error: too few arguments", r"error: too many arguments",
+            r"error: .* undeclared",
+            r"error: .* was not declared",
+            r"error: use of undeclared identifier",
+            r"error: implicit declaration of function",
+        ],
+    },
+    # 源码 - 类型不匹配 (priority 36)
+    {
+        "rule_name": "source_type_mismatch",
+        "priority": 36,
+        "main_category": "源码编译错误",
+        "sub_category": "类型不匹配或接口不兼容",
+        "owner_side": "软件包源码侧",
+        "action": "记录为源码问题，可能是上游 API 变更引起",
+        "patterns": [
+            r"error: incompatible types",
+            r"error: invalid conversion",
+            r"error: cannot convert",
+            r"error: conflicting types for",
             r"error: assignment .* incompatible",
+            r"error: too few arguments",
+            r"error: too many arguments",
+            r"error: no member named",
+        ],
+    },
+    # 源码 - 语法错误 (priority 37)
+    {
+        "rule_name": "source_syntax_error",
+        "priority": 37,
+        "main_category": "源码编译错误",
+        "sub_category": "语法错误或编译标志错误",
+        "owner_side": "软件包源码侧",
+        "action": "记录为源码问题，可能是编译器版本或编译选项不兼容",
+        "patterns": [
+            r"error: expected .* before",
+            r"error: expected .* at end of input",
+            r"error: redefinition of",
             r"error: storage size of .* isn't known",
             r"error: dereferencing pointer to incomplete type",
             r"error: 'for' loop initial declarations",
-            r"\[-Werror", r"all warnings being treated as errors",
+            r"\[-Werror",
+            r"all warnings being treated as errors",
         ],
     },
+    # 源码 - 编码错误 (priority 38)
+    {
+        "rule_name": "encoding_error",
+        "priority": 38,
+        "main_category": "源码编译错误",
+        "sub_category": "字符编码或编码识别错误",
+        "owner_side": "软件包源码侧",
+        "action": "检查源码文件编码，必要时设置 LANG/LC_ALL",
+        "patterns": [
+            r"UnicodeDecodeError",
+            r"UnicodeEncodeError",
+            r"invalid byte sequence",
+            r"illegal byte sequence",
+            r"'ascii' codec can't",
+        ],
+    },
+    # 链接错误 (priority 45)
     {
         "rule_name": "link_error",
         "priority": 45,
         "main_category": "链接错误",
-        "sub_category": "符号未定义或链接库缺失",
+        "sub_category": "符号未定义或链接失败",
         "owner_side": "构建配置侧",
         "action": "检查链接参数、库依赖和 LTO 设置",
         "patterns": [
@@ -220,19 +363,52 @@ RULES = [
             r"plugin needed to handle lto object", r"lto-wrapper failed",
         ],
     },
+    # CMake 配置 (priority 50)
     {
-        "rule_name": "cmake_meson_config_error",
+        "rule_name": "cmake_config_error",
         "priority": 50,
         "main_category": "构建系统问题",
-        "sub_category": "CMake 或 Meson 配置失败",
+        "sub_category": "CMake 配置语法或参数错误",
         "owner_side": "构建配置侧",
-        "action": "检查构建参数、依赖项和源码目录",
+        "action": "检查 CMakeLists.txt 或传入的 -D 参数",
         "patterns": [
-            r"CMake Error", r"Meson encountered an error",
-            r"meson\.build:.*ERROR", r"Unknown option",
+            r"CMake Error at",
+            r"CMake Error:",
+            r"CMake Warning .* fatal",
             r"Configuring incomplete",
         ],
     },
+    # Meson 配置 (priority 50)
+    {
+        "rule_name": "meson_config_error",
+        "priority": 50,
+        "main_category": "构建系统问题",
+        "sub_category": "Meson 配置语法或参数错误",
+        "owner_side": "构建配置侧",
+        "action": "检查 meson.build 或传入的构建选项",
+        "patterns": [
+            r"Meson encountered an error",
+            r"meson\.build:.*ERROR",
+            r"Unknown option",
+            r"Invalid version of dependency",
+        ],
+    },
+    # 源码文件缺失 (priority 55)
+    {
+        "rule_name": "source_files_missing",
+        "priority": 55,
+        "main_category": "构建系统问题",
+        "sub_category": "源码文件或目录缺失",
+        "owner_side": "构建配置侧",
+        "action": "检查 git submodule、源码完整性或解压步骤",
+        "patterns": [
+            r"No such file or directory: '.*'",
+            r"missing\s+Makefile",
+            r"no rule to make target",
+            r"empty source directory",
+        ],
+    },
+    # 测试失败 (priority 60)
     {
         "rule_name": "test_failure",
         "priority": 60,
@@ -243,22 +419,38 @@ RULES = [
         "patterns": [
             r"The following tests FAILED", r"tests failed out of",
             r"FAILED .* in ", r"AssertionError", r"FAIL:",
-            r"ERROR: test", r"Test timeout",
+            r"ERROR: test",
         ],
     },
+    # 测试超时 (priority 65)
+    {
+        "rule_name": "test_timeout",
+        "priority": 65,
+        "main_category": "测试阶段失败",
+        "sub_category": "测试超时",
+        "owner_side": "软件包源码侧",
+        "action": "适当调高超时阈值，或检查测试是否死锁",
+        "patterns": [
+            r"Test timeout",
+            r"timeout .* expired",
+            r"timed out after",
+        ],
+    },
+    # 权限/路径 (priority 70)
     {
         "rule_name": "permission_or_path_error",
         "priority": 70,
         "main_category": "环境与路径问题",
-        "sub_category": "权限、路径或文件生成失败",
+        "sub_category": "权限、路径或磁盘空间问题",
         "owner_side": "测试环境侧",
-        "action": "检查目录是否存在、是否可写、磁盘空间是否充足",
+        "action": "检查目录权限、是否可写、磁盘空间是否充足",
         "patterns": [
             r"Permission denied", r"Read-only file system",
             r"cannot create .* No such file or directory",
             r"No space left on device", r"cannot create directory",
         ],
     },
+    # make 兜底 (priority 90)
     {
         "rule_name": "make_aggregate_error",
         "priority": 90,
@@ -275,21 +467,17 @@ RULES = [
 ]
 
 
-def read_lines(path: Path):
+def read_lines(path):
     if not path.exists():
         return []
     return path.read_text(encoding="utf-8", errors="ignore").splitlines()
 
 
-def is_error_line(line: str):
+def is_error_line(line):
     return any(re.search(p, line, re.IGNORECASE) for p in ERROR_PATTERNS)
 
 
 def find_root_cause_line(lines, rules):
-    """
-    在所有错误锚点行里，找"最优先的根因行"。
-    返回 (锚点行索引, 命中的规则)。找不到返回 (None, None)。
-    """
     hits = [(i, line) for i, line in enumerate(lines) if is_error_line(line)]
     if not hits:
         return None, None
@@ -302,24 +490,17 @@ def find_root_cause_line(lines, rules):
                 if re.search(pat, line, re.IGNORECASE | re.MULTILINE):
                     return i, rule
 
-    # 没有任何规则匹配上锚点行，退化：取第一个锚点
     return hits[0][0], None
 
 
 def extract_error_excerpt(lines, before=3, after=15, max_lines_total=20):
-    """
-    优化版：只截"根因窗口"+ 噪音过滤 + 行截断。
-    返回 (excerpt_text, error_hit_count).
-    """
     hits = [i for i, line in enumerate(lines) if is_error_line(line)]
     hit_count = len(hits)
 
     if not hits:
-        # 没有任何错误锚点：截尾部短片段
         tail_lines = [clean_line(l) for l in lines[-30:] if not is_noise(l)]
         return "\n".join(tail_lines).strip(), 0
 
-    # 找根因行
     root_idx, _ = find_root_cause_line(lines, RULES)
     if root_idx is None:
         root_idx = hits[0]
@@ -334,20 +515,18 @@ def extract_error_excerpt(lines, before=3, after=15, max_lines_total=20):
             continue
         window.append(clean_line(line))
 
-    # 合并连续相同行
     dedup = []
     for line in window:
         if not dedup or dedup[-1] != line:
             dedup.append(line)
 
-    # 总行数限制
     if len(dedup) > max_lines_total:
         dedup = dedup[:max_lines_total] + ["...[更多行已省略]"]
 
     return "\n".join(dedup), hit_count
 
 
-def normalize_template(text: str):
+def normalize_template(text):
     text = re.sub(r"/[A-Za-z0-9._+\-=/]+", "<PATH>", text)
     text = re.sub(r"\b[0-9a-f]{7,40}\b", "<HASH>", text)
     text = re.sub(r"\b\d+\.\d+(\.\d+)?\b", "<VERSION>", text)
@@ -357,7 +536,7 @@ def normalize_template(text: str):
     return text
 
 
-def classify(text: str):
+def classify(text):
     matched_rules = []
     for rule in RULES:
         matched = []
@@ -398,7 +577,7 @@ def classify(text: str):
     }
 
 
-def write_csv(path: Path, row: dict):
+def write_csv(path, row):
     fields = [
         "package", "stage", "result",
         "main_category", "sub_category", "owner_side", "action",
