@@ -63,7 +63,6 @@ xdg-dbus-proxy,https://github.com/flatpak/xdg-dbus-proxy
 woff2,https://github.com/google/woff2
 libexttextcat,https://git.libreoffice.org/libexttextcat
 libbpf,https://github.com/libbpf/libbpf
-net-snmp,https://github.com/net-snmp/net-snmp
 libxfce4ui,https://gitlab.xfce.org/xfce/libxfce4ui
 libcbor,https://github.com/PJK/libcbor
 imath,https://github.com/AcademySoftwareFoundation/Imath
