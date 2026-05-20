@@ -1,2 +1,5 @@
 ﻿package,type
 lua5.4,makefile
+libnumbertext,autotools-autoreconf
+libinih,meson
+openfec,cmake
