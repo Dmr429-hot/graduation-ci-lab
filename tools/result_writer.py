@@ -16,11 +16,14 @@ FAIL_FIELDS = [
     "main_category", "sub_category", "owner_side",
     "action",                       # 通用动作建议（规则级）
     "rule_name",
-    "missing_header",               # 缺的头文件名
-    "missing_package",              # 缺的 pkg-config 包名
-    "missing_library",              # 缺的链接库
-    "missing_command",              # 缺的命令
+    "missing_header",
+    "missing_package",
+    "missing_library",
+    "missing_command",
     "error_excerpt", "error_hit_count", "matched_patterns",
+    "ai_rounds_used",               # AI闭环执行了几轮
+    "ai_packages_installed",        # AI闭环安装的包（分号分隔）
+    "ai_final_status",              # AI闭环最终状态
 ]
 
 OTHER_FIELDS = ["package", "type", "reason"]
