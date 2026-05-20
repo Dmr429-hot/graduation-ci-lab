@@ -3,3 +3,17 @@ lua5.4,makefile
 libnumbertext,autotools-autoreconf
 libinih,meson
 openfec,cmake
+file,autotools-autoreconf
+libnvme,meson
+argon2,makefile
+libfreeaptx,makefile
+liblc3,meson
+faad2,cmake
+libnfs,cmake
+libcbor,cmake
+imath,cmake
+openexr,cmake
+libpipeline,autotools-bootstrap
+libraw,autotools-autoreconf
+sg3-utils,autotools-autogen
+ding-libs,autotools-autoreconf

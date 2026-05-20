@@ -1,0 +1,4 @@
+﻿package,type,reason
+libldac,unknown,当前构建类型无法识别或暂不支持自动构建
+jackd2,unknown,当前构建类型无法识别或暂不支持自动构建
+signond,unknown,当前构建类型无法识别或暂不支持自动构建

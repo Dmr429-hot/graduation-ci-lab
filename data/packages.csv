@@ -53,7 +53,6 @@ jackd2,https://github.com/jackaudio/jack2
 libmanette,https://gitlab.gnome.org/GNOME/libmanette
 gupnp,https://gitlab.gnome.org/GNOME/gupnp
 libwnck3,https://gitlab.gnome.org/GNOME/libwnck
-#NAME?,https://github.com/WebKit/WebKit
 libsdl2,https://github.com/libsdl-org/SDL
 faad2,https://github.com/knik0/faad2
 gcr,https://gitlab.gnome.org/GNOME/gcr
