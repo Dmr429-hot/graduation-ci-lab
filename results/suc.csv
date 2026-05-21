@@ -17,3 +17,13 @@ libpipeline,autotools-bootstrap
 libraw,autotools-autoreconf
 sg3-utils,autotools-autogen
 ding-libs,autotools-autoreconf
+xdg-dbus-proxy,meson
+libxres,meson
+libexttextcat,autotools-autogen
+libeot,autotools-autoreconf
+libdmtx,cmake
+openal-soft,cmake
+libxxf86dga,meson
+rubberband,meson
+liblinear,makefile
+libnatpmp,cmake
