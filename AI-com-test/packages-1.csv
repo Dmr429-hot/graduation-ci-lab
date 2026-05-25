@@ -1,0 +1,6 @@
+libdisplay-info,https://gitlab.freedesktop.org/emersion/libdisplay-info
+efivar,https://github.com/rhboot/efivar
+libical3,https://github.com/libical/libical
+udisks2,https://github.com/storaged-project/udisks
+tcl8.6,https://github.com/tcltk/tcl
+libnatpmp,https://github.com/miniupnp/libnatpmp
