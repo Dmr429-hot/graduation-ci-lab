@@ -1,6 +1,0 @@
-jackd2,https://github.com/jackaudio/jack2
-cpio,https://git.savannah.gnu.org/git/cpio.git
-python-msgpack,https://github.com/msgpack/msgpack-python
-openssh,https://github.com/openssh/openssh-portable
-sssd,"https://github.com/SSSD/ding-libs"
-libmms,https://git.code.sf.net/p/libmms/code libmms-code

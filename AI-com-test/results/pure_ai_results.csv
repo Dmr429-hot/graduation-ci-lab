@@ -1,0 +1,6 @@
+
+modemmanager,https://gitlab.freedesktop.org/mobile-broadband/ModemManager,rounds_exhausted,用完 15 轮,15,15,74895,47.2,/home/abc/ci-lab-work/logs/pure_ai/modemmanager_20260527_133112.log
+libxfce4util,https://gitlab.xfce.org/xfce/libxfce4util,rounds_exhausted,用完 15 轮,15,11,33359,344.5,/home/abc/ci-lab-work/logs/pure_ai/libxfce4util_20260527_133159.log
+udisks2,https://github.com/storaged-project/udisks,rounds_exhausted,用完 15 轮,15,15,57542,147.6,/home/abc/ci-lab-work/logs/pure_ai/udisks2_20260527_133744.log
+libical3,https://github.com/libical/libical,fixed,所有67个测试通过，构建和测试成功,12,11,48712,152.4,/home/abc/ci-lab-work/logs/pure_ai/libical3_20260527_134012.log
+kconfig,https://invent.kde.org/frameworks/kconfig,ai_gave_up,系统 Qt6 版本 6.2.4 不满足 kconfig 要求的 6.9.0，且无法升级或修改源码，构建失败,15,13,46231,55.7,/home/abc/ci-lab-work/logs/pure_ai/kconfig_20260527_134244.log
